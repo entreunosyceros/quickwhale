@@ -1,5 +1,7 @@
 # QuickWhale v1.0 — «Aprendiendo Bash»
 
+<img width="1408" height="768" alt="quickwhale" src="https://github.com/user-attachments/assets/184f1c67-233e-43e8-881a-ef4077dc68c6" />
+
 **QuickWhale** es solo un asistente interactivo en Bash para **instalar Docker y Composer en Ubuntu**, aprender Docker de forma guiada y **gestionar tus propios contenedores, archivos Compose y páginas HTML** para así no tener que memorizar todos los comandos de la CLI.
 
 

@@ -1,0 +1,6 @@
+services:
+  web:
+    build: .
+    container_name: web-compose
+    ports:
+      - "${HOST_PORT:-8080}:80"

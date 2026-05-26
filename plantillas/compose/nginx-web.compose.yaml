@@ -1,0 +1,8 @@
+# Plantilla: web estática con Nginx (build local)
+services:
+  web:
+    build: .
+    container_name: ${PROJECT_NAME:-mi-web}-nginx
+    ports:
+      - "${HOST_PORT:-8080}:80"
+    restart: unless-stopped

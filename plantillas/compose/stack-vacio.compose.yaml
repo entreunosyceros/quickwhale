@@ -1,0 +1,6 @@
+# Plantilla: stack mínimo (añade tus servicios)
+services:
+  app:
+    image: alpine:latest
+    container_name: ${PROJECT_NAME:-mi-stack}-app
+    command: sleep infinity

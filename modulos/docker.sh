@@ -1,13 +1,42 @@
 verificar_docker() {
     if ! existe_comando docker; then
         msg_error "Docker no está instalado. Usa la opción de instalación del menú principal."
-        pausa
+        pausa_obligatoria
         return 1
     fi
+
+    if qw_asegurar_docker_cli || docker info &>/dev/null; then
+        return 0
+    fi
+
     if ! docker info &>/dev/null; then
-        msg_error "Docker no responde. ¿Está el servicio activo? ¿Tienes permisos (grupo docker)?"
-        msg_info "Prueba: sudo systemctl start docker"
-        pausa
+        case "$(qw_diagnostico_fallo_docker)" in
+            contexto_desktop)
+                msg_error "Docker Engine está activo, pero no se pudo cambiar el contexto del CLI."
+                if pedir_si_no "¿Intentar de nuevo (docker context use default)?" "s"; then
+                    qw_corregir_contexto_docker_engine && docker info &>/dev/null && return 0
+                fi
+                ;;
+            servicio_o_otro)
+                if ! qw_servicio_docker_activo; then
+                    msg_error "Docker no responde y el servicio no está activo."
+                    msg_info "Menú principal → 4 → 2 (iniciar Docker)."
+                else
+                    msg_error "Docker no responde."
+                    msg_info "Menú principal → 4 (Estado y servicios) para diagnosticar."
+                fi
+                ;;
+            *)
+                msg_error "Docker está instalado y el servicio systemd está activo, pero tu usuario no puede usarlo."
+                if ! qw_usuario_en_grupo_docker; then
+                    msg_info "Causa probable: no estás en el grupo 'docker'."
+                    msg_info "Menú principal → 4 → 6 (añadir al grupo docker), luego cierra sesión."
+                else
+                    msg_info "Menú principal → 4 → 7 (contexto default) o cierra sesión."
+                fi
+                ;;
+        esac
+        pausa_obligatoria
         return 1
     fi
     return 0
@@ -192,9 +221,58 @@ op_remove_container() {
     pausa
 }
 
+docker_list() {
+    # Definición de colores para mejorar la legibilidad
+    local VERDE='\033[0;32m'
+    local AZUL='\033[0;34m'
+    local CIAN='\033[0;36m'
+    local AMARILLO='\033[1;33m'
+    local RESET='\033[0m'
+
+    echo -e "${AMARILLO}====================================================${RESET}"
+    echo -e "${AMARILLO}     LISTADO DE IMÁGENES PARA DOCKER                ${RESET}"
+    echo -e "${AMARILLO}====================================================${RESET}"
+
+    # 1. Bases de Datos y Almacenamiento
+    echo -e "\n${AMARILLO}[ Bases de Datos y Almacenamiento ]${RESET}"
+    echo -e "  ${VERDE}postgres${RESET}                   - PostgreSQL: Base de datos relacional robusta."
+    echo -e "  ${VERDE}mysql${RESET}                      - MySQL: Una de las opciones más utilizadas para la web."
+    echo -e "  ${VERDE}redis${RESET}                      - Redis: Almacenamiento en memoria para caché y colas."
+
+    # 2. Desarrollo Web y Servidores
+    echo -e "\n${AMARILLO}[ Desarrollo Web y Servidores ]${RESET}"
+    echo -e "  ${VERDE}nginx${RESET}                      - Nginx: Servidor web ultraligero y proxy inverso."
+    echo -e "  ${VERDE}wordpress${RESET}                  - WordPress: Gestión de contenidos (requiere base de datos)."
+    echo -e "  ${VERDE}python${RESET}                     - Python: Para ejecutar scripts o microservicios."
+    echo -e "  ${VERDE}node${RESET}                       - Node.js: Entorno de ejecución para JavaScript en backend. (¡Popular!)"
+
+    # 3. Inteligencia Artificial y Ciencia de Datos
+    echo -e "\n${AMARILLO}[ Inteligencia Artificial y Ciencia de Datos ]${RESET}"
+    echo -e "  ${VERDE}jupyter/datascience-notebook${RESET} - Jupyter Notebook: Pila de datos preconfigurada."
+    echo -e "  ${VERDE}ollama/ollama${RESET}              - Ollama: Ejecución de modelos de lenguaje (LLMs) localmente."
+
+    # 4. Herramientas de Red y Laboratorio Doméstico
+    echo -e "\n${AMARILLO}[ Herramientas de Red y Laboratorio Doméstico (Homelab) ]${RESET}"
+    echo -e "  ${VERDE}portainer/portainer-ce${RESET}     - Portainer: Interfaz gráfica para gestionar contenedores."
+    echo -e "  ${VERDE}pihole/pihole${RESET}              - Pi-hole: Bloqueador de publicidad a nivel de red."
+    echo -e "  ${VERDE}homeassistant/home-assistant${RESET} - Home Assistant: Automatización del hogar."
+
+    # 5. Ciberseguridad y Auditoría
+    echo -e "\n${AMARILLO}[ Ciberseguridad y Auditoría ]${RESET}"
+    echo -e "  ${VERDE}metasploitframework/metasploit-framework${RESET} - Metasploit: Pruebas de intrusión."
+
+    # 6. Utilidades del Sistema y Orquestación (Agregadas por popularidad)
+    echo -e "\n${AMARILLO}[ Sistema y Orquestación Populares ]${RESET}"
+    echo -e "  ${VERDE}alpine${RESET}                     - Alpine Linux: Imagen base minimalista y ultraligera (~5MB)."
+    echo -e "  ${VERDE}traefik${RESET}                    - Traefik: Proxy inverso moderno y enrutador nativo de la nube."
+
+    echo -e "\n${AMARILLO}====================================================${RESET}"
+}
+
 op_pull_image() {
     verificar_docker || return
     mostrar_banner
+    docker_list
     local image
     image=$(pedir_imagen) || { pausa; return; }
     docker pull "$image"
@@ -305,19 +383,16 @@ op_docker_status() {
     echo -e "${C_BOLD}Estado del entorno${C_RESET}"
     echo
     if existe_comando docker; then
-        echo -e "  Docker: ${C_GREEN}$(docker --version)${C_RESET}"
-        if docker info &>/dev/null; then
-            echo -e "  Daemon: ${C_GREEN}activo${C_RESET}"
+        qw_mostrar_diagnostico_docker
+        if qw_docker_accesible; then
             docker compose version 2>/dev/null && true
-        else
-            echo -e "  Daemon: ${C_RED}no accesible${C_RESET}"
         fi
     else
         echo -e "  Docker: ${C_RED}no instalado${C_RESET}"
     fi
     echo
     if existe_comando composer; then
-        echo -e "  Composer: ${C_GREEN}$(composer --version 2>/dev/null | head -1)${C_RESET}"
+        echo -e "  Composer: ${C_GREEN}$(qw_composer_version)${C_RESET}"
     else
         echo -e "  Composer: ${C_RED}no instalado${C_RESET}"
     fi

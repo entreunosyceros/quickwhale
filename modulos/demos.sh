@@ -53,6 +53,8 @@ menu_demo_compose() {
         echo "   3) Ver estado (compose ps)"
         echo "   4) Ver logs"
         echo
+        echo -e "${C_DIM}  Si falla el contexto Docker Desktop, QuickWhale lo cambia a Engine automaticamente.${C_RESET}"
+        echo
         echo "   0) Volver"
         echo
         echo -e "${C_DIM}  Las acciones se abren en ventana nueva.${C_RESET}"

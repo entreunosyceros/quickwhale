@@ -1,5 +1,5 @@
 instalar_docker() {
-    requerir_root
+    requerir_root || return 1
     mostrar_banner
     msg_info "Iniciando instalación de Docker..."
 
@@ -31,11 +31,7 @@ instalar_docker() {
     chmod a+r /etc/apt/keyrings/docker.gpg
 
     msg_info "Configurando repositorio de Docker..."
-    echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-        https://download.docker.com/linux/ubuntu \
-        $(. /etc/os-release && echo "${VERSION_CODENAME:-$UBUNTU_CODENAME}") stable" \
-        | tee /etc/apt/sources.list.d/docker.list > /dev/null
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
     apt-get update -qq
     msg_info "Instalando Docker Engine, CLI y Compose plugin..."
@@ -67,9 +63,9 @@ instalar_docker() {
 # =============================================================================
 
 instalar_composer() {
-    requerir_root
+    requerir_root || return 1
     mostrar_banner
-    msg_info "Iniciando instalación de Composer..."
+    msg_info "Iniciando la instalación de Composer..."
 
     if existe_comando composer; then
         msg_ok "Composer ya está instalado: $(composer --version 2>/dev/null | head -1)"
@@ -84,7 +80,7 @@ instalar_composer() {
     msg_info "Descargando instalador oficial de Composer..."
     local tmp_dir
     tmp_dir=$(mktemp -d)
-    trap 'rm -rf "$tmp_dir"' RETURN
+    trap 'rm -rf "${tmp_dir:-}"' RETURN
 
     curl -fsSL https://getcomposer.org/installer -o "$tmp_dir/composer-setup.php"
     curl -fsSL https://getcomposer.org/installer.sig -o "$tmp_dir/composer-setup.sig" 2>/dev/null || true
@@ -102,7 +98,7 @@ instalar_composer() {
 # =============================================================================
 
 instalar_comando_global() {
-    requerir_root
+    requerir_root || return 1
     mostrar_banner
     msg_info "Instalando comando global '${INSTALL_BIN##*/}'..."
 
@@ -120,6 +116,26 @@ instalar_comando_global() {
     echo -e "  ${C_CYAN}quickwhale docker${C_RESET}"
     echo -e "  ${C_CYAN}quickwhale didactic${C_RESET}"
     echo -e "  ${C_DIM}  Módulos en: ${DIR_MODULOS}${C_RESET}"
+    echo -e "  ${C_DIM}  Ejemplos en: ${DIR_EJEMPLOS}${C_RESET}"
+    echo -e "  ${C_DIM}  Documentación: ${SCRIPT_DIR}/README.md${C_RESET}"
+    echo -e "  ${C_DIM}  Configuración LN: ${LN_DIR_CONFIG}${C_RESET}"
+}
+
+instalar_emulador_terminal() {
+    mostrar_banner
+    msg_info "Emulador de terminal para abrir actividades en ventana nueva."
+    echo
+    if qw_hay_lanzador_terminal; then
+        msg_ok "Ya hay un lanzador de terminal disponible."
+        msg_info "Prioridad: x-terminal-emulator / xdg-terminal-exec → emulador del escritorio."
+        msg_info "Variable opcional: export QUICKWHALE_TERMINAL=gnome-terminal"
+    fi
+    echo
+    if qw_instalar_emulador_terminal; then
+        msg_ok "Dependencias de terminal instaladas o ya presentes."
+    else
+        msg_aviso "No se instalaron paquetes. Las actividades usarán esta terminal."
+    fi
 }
 
 instalar_todo() {
@@ -130,7 +146,7 @@ instalar_todo() {
     echo
     instalar_comando_global
     echo
-    msg_ok "Instalación completa finalizada."
+    msg_ok "Instalación completa finalizada correctamente."
     msg_info "Proyecto de ejemplo Compose: $DIR_EJEMPLOS"
     pausa
 }

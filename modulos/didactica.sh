@@ -52,7 +52,7 @@ Opcion B: Docker Engine en Ubuntu (especialmente util para formacion tecnica)
    - sudo apt-get install ca-certificates curl gnupg
    - sudo mkdir -p /etc/apt/keyrings
    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-   - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
    - sudo apt-get update
 2) Instalar paquetes:
    - sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
@@ -521,22 +521,42 @@ EOF
     pausa
 }
 
-op_module_rubrica_evaluacion() {
+op_module_lista_comprobacion() {
     clear 2>/dev/null || true
-    echo -e "${C_BOLD}Criterios de autoevaluacion${C_RESET}"
+    echo -e "${C_BOLD}Lista de comprobacion — ¿Qué ya dominas?${C_RESET}"
     echo
     cat << 'EOF'
-Criterio                            Excelente                                    Correcto                     Insuficiente
----------------------------------------------------------------------------------------------------------------
-Instalacion                          Docker instalado y validado sin errores.      Con ayuda puntual.           No completa/valida.
+Marca mentalmente cada punto cuando lo tengas claro (no hay nota ni calificacion).
 
-Comprension conceptual              Diferencia claramente imagen/cont.           Distingue con dudas menores. Confunde conceptos base.
+Instalacion y entorno
+[ ] Docker instalado y probado (docker version, docker info, hello-world)
+[ ] Puedo usar docker sin sudo (grupo docker o contexto 'default' si usas Engine)
 
-Uso de comandos                      Usa con soltura build/run/ps/logs/stop/rm/Compose.  Usa lo basico con apoyo. No maneja el flujo.
+Conceptos
+[ ] Explico con mis palabras: imagen, contenedor, puerto, volumen
+[ ] Se que una imagen no es lo mismo que un contenedor en ejecucion
 
-Practica                            Construye, ejecuta, modifica y relanza.     Completa casi todo.         No logra la practica funcional.
+Comandos basicos
+[ ] docker ps / docker ps -a
+[ ] docker logs y docker exec -it
+[ ] docker stop / docker rm
+[ ] docker build y docker run con -p
 
-Portabilidad                        Comparte o replica en otro sistema.         Entiende el proceso a medias. No demuestra portabilidad.
+Practica web en contenedor
+[ ] Construi una imagen con Dockerfile y la ejecute en el navegador
+[ ] Cambie el HTML y supe si hace falta reconstruir la imagen
+
+Docker Compose
+[ ] Tengo un compose.yaml y uso docker compose up -d / down
+[ ] docker compose ps y compose logs
+
+Si algo falla
+[ ] Puedo revisar puertos ocupados y permisos
+[ ] Se usar el menu 4 (Estado y servicios) de QuickWhale
+
+Siguiente paso
+[ ] Puedo compartir el proyecto o la imagen con otra maquina
+[ ] Puedo repetir la practica en otra carpeta sin perderme
 EOF
     echo
     pausa
@@ -544,7 +564,7 @@ EOF
 
 op_module_anexo_secuencia_minima() {
     clear 2>/dev/null || true
-    echo -e "${C_BOLD}Anexo: secuencia minima para pizarra${C_RESET}"
+    echo -e "${C_BOLD}Anexo: secuencia minima de comandos${C_RESET}"
     echo
     cat << 'EOF'
 docker version
@@ -609,8 +629,8 @@ menu_modulos_didacticos() {
         echo "  9) Diferencias macOS/Ubuntu/Windows"
         echo "  10) Errores frecuentes y solucion"
         echo "  11) Actividades de practica"
-        echo "  12) Criterios de autoevaluacion"
-        echo "  13) Anexo: secuencia minima (pizarra)"
+        echo "  12) Lista de comprobacion (que ya dominas?)"
+        echo "  13) Anexo: secuencia minima de comandos"
         echo "  14) Anexo: practica breve alternativa"
         echo
         echo "   0) Volver"
@@ -630,7 +650,7 @@ menu_modulos_didacticos() {
             9)  qw_launch "Diferencias SO" op_module_diferencias_mac_ubu_windows ;;
             10) qw_launch "Errores frecuentes" op_module_errores_frecuentes ;;
             11) qw_launch "Actividades de practica" operacion_modulo_actividades_practica ;;
-            12) qw_launch "Autoevaluacion" op_module_rubrica_evaluacion ;;
+            12) qw_launch "Lista comprobacion" op_module_lista_comprobacion ;;
             13) qw_launch "Anexo pizarra" op_module_anexo_secuencia_minima ;;
             14) qw_launch "Anexo nginx rapido" op_module_anexo_practica_alternativa ;;
             0) return ;;

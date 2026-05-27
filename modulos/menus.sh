@@ -86,21 +86,24 @@ menu_instalacion() {
     while true; do
         mostrar_banner
         echo -e "${C_BOLD}Instalación${C_RESET} ${C_DIM}(requiere sudo)${C_RESET}"
-        echo -e "${C_DIM}  Cada instalación se abre en ventana nueva.${C_RESET}"
+        echo -e "${C_DIM}  Se ejecuta en esta terminal (no en ventana nueva).${C_RESET}"
+        echo -e "${C_DIM}  Si no eres root: sudo ${SCRIPT_PATH}${C_RESET}"
         echo
         echo "   1) Instalar Docker"
         echo "   2) Instalar Composer"
         echo "   3) Instalar todo (Docker + Composer + comando global)"
         echo "   4) Instalar comando global quickwhale (sudo)"
+        echo "   5) Instalar emulador de terminal (ventanas nuevas)"
         echo
         echo "   0) Volver"
         echo
         read -r -p "Selecciona una opción: " choice
         case "$choice" in
-            1) qw_launch "Instalar Docker" instalar_docker ;;
-            2) qw_launch "Instalar Composer" instalar_composer ;;
-            3) qw_launch "Instalación completa" instalar_todo ;;
-            4) qw_launch "Comando global" instalar_comando_global ;;
+            1) instalar_docker; pausa ;;
+            2) instalar_composer; pausa ;;
+            3) instalar_todo ;;
+            4) instalar_comando_global; pausa ;;
+            5) instalar_emulador_terminal; pausa ;;
             0) return ;;
             *) msg_error "Opción no válida."; pausa ;;
         esac
@@ -151,7 +154,7 @@ menu_principal() {
         echo "   1) Instalar Docker y/o Composer"
         echo "   2) Operaciones Docker (asistente)"
         echo "   3) Operaciones Composer"
-        echo "   4) Estado del entorno"
+        echo "   4) Estado y servicios (Docker / Composer)"
         echo "   5) Proyecto de ejemplo Docker Compose"
         echo "   6) Modulos didacticos (apuntes)"
         echo "   7) Modo lenguaje natural (¿Qué quieres hacer?)"
@@ -165,7 +168,7 @@ menu_principal() {
             1) menu_instalacion ;;
             2) menu_operaciones_docker ;;
             3) menu_operaciones_composer ;;
-            4) qw_launch "Estado del entorno" op_docker_status ;;
+            4) menu_estado_y_servicios ;;
             5) menu_demo_compose ;;
             6) menu_modulos_didacticos ;;
             7) qw_launch "Modo lenguaje natural" menu_lenguaje_natural ;;

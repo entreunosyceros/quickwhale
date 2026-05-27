@@ -4,7 +4,7 @@
 # Punto de entrada: carga módulos desde lib/ y modulos/
 # =============================================================================
 
-set -euo pipefail
+set -uo pipefail
 
 export QUICKWHALE_ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
@@ -16,7 +16,7 @@ main() {
     case "${1:-}" in
         run-activity)
             shift
-            qw_run_activity_child "${1:?falta nombre de actividad}"
+            qw_run_activity_child "${1:?falta nombre de actividad}" "${@:2}"
             exit 0
             ;;
         install|setup)

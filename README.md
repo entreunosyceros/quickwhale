@@ -87,7 +87,7 @@ Al iniciar verás el banner de **QuickWhale** y el menú principal. Las acciones
 | **1** | Instalar Docker y/o Composer |
 | **2** | **Operaciones Docker** — gestiona **cualquier** contenedor del sistema |
 | **3** | Operaciones Composer (`install`, `update`, comandos personalizados) |
-| **4** | Estado del entorno |
+| **4** | **Estado y servicios** — iniciar/parar/reiniciar Docker, permisos, verificar Composer |
 | **5** | Demo Docker Compose (`ejemplos/`, puerto 8080) |
 | **6** | **Módulos didácticos** — apuntes, catálogo de comandos, prácticas guiadas |
 | **7** | **Modo lenguaje natural** — ¿Qué quieres hacer? |
@@ -168,11 +168,15 @@ Puedes abrirlo en el navegador por defecto del sistema (vía `xdg-open`, `sensib
 
 ## Ventanas nuevas y menú siempre visible
 
-Al elegir una actividad (por ejemplo «Listar contenedores» o «Editar YAML»), QuickWhale intenta abrirla en **otra terminal**. El menú en la ventana original **no se cierra** y puedes lanzar más tareas en paralelo.
+Al elegir una actividad (por ejemplo «Listar contenedores» o «Editar YAML»), QuickWhale intenta abrirla en **otra terminal del sistema** (la misma que usa tu escritorio). El menú en la ventana original **no se cierra**.
 
-Terminales compatibles detectadas automáticamente: `gnome-terminal`, `konsole`, `xfce4-terminal`, `xterm`, `alacritty`, `kitty`, `wt.exe` (Windows).
+**Orden de preferencia:** `x-terminal-emulator` / `xdg-terminal-exec` (terminal por defecto del SO) → emulador del escritorio (GNOME, KDE, XFCE…) → otros.
 
-Si no hay entorno gráfico (SSH sin X11), verás un aviso y la acción se ejecutará en la misma terminal.
+Si falta el emulador o D-Bus (`dbus-x11`), QuickWhale puede **instalar automáticamente** `gnome-terminal`, `xdg-utils` y `dbus-x11` (con confirmación sudo). También: menú **1 → 5** (Instalar emulador de terminal).
+
+Variable opcional: `export QUICKWHALE_TERMINAL=gnome-terminal`
+
+Si no hay entorno gráfico (SSH sin X11), la acción se ejecuta en la misma terminal.
 
 ---
 
@@ -197,6 +201,7 @@ quickwhale.sh          →  lib/arranque.sh  →  carga lib/* y modulos/*
 | `modulos/demos.sh` | Demos en `ejemplos/` |
 | `modulos/didactica.sh` | Apuntes y prácticas guiadas |
 | `modulos/proyectos.sh` | Proyectos personales del usuario |
+| `modulos/servicios.sh` | Estado, servicio Docker y utilidades Composer |
 | `modulos/lenguaje_natural.sh` | Modo lenguaje natural |
 | `modulos/menus.sh` | Menús interactivos |
 
@@ -243,7 +248,7 @@ Incluye la guía de Docker para macOS, Ubuntu y Windows:
 - **Práctica guiada** `web-docker-practica` (versiones 1.0 y 2.0)
 - **Práctica con Compose**
 - Compartir imágenes (Docker Hub) o proyectos
-- Errores frecuentes, actividades de práctica, rúbrica y anexos
+- Errores frecuentes, actividades de practica, lista de comprobacion y anexos
 
 Las prácticas usan `ejemplos/web-docker-practica/`. Los demos en `ejemplos/` (opción 5) son independientes.
 
@@ -355,7 +360,8 @@ Si el HTML está **dentro de la imagen** (`COPY` en Dockerfile), hay que **recon
 | Problema | Qué hacer |
 |----------|-----------|
 | `docker: command not found` | Menú **1** o `sudo ./quickwhale.sh install` |
-| `permission denied` en Docker | `sudo usermod -aG docker $USER` y cerrar sesión |
+| `permission denied` en Docker | Menú **4 → 6** (grupo docker) o `sudo usermod -aG docker $USER` y cerrar sesión |
+| Docker no responde / daemon parado | Menú **4 → 2** (iniciar) o **4 → 4** (reiniciar) |
 | No se abren ventanas nuevas | Normal en SSH sin X11; usa la misma terminal |
 | Puerto 8080 ocupado | Cambia `HOST_PORT` en `.env` o en `compose.yaml` |
 | No se ven cambios en HTML | Reconstruye imagen y relanza contenedor |

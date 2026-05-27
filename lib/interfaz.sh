@@ -19,10 +19,15 @@ msg_ok()      { echo -e "${C_GREEN}[OK]${C_RESET} $*"; }
 msg_aviso()   { echo -e "${C_YELLOW}[AVISO]${C_RESET} $*"; }
 msg_error()   { echo -e "${C_RED}[ERROR]${C_RESET} $*" >&2; }
 
+# Siempre espera Enter (también en ventana hija y tras errores)
+pausa_obligatoria() {
+    echo
+    read -r -p "Pulsa Enter para continuar..." _ || true
+}
+
 pausa() {
     if [[ "${QUICKWHALE_CHILD:-}" == "1" ]]; then
         return 0
     fi
-    echo
-    read -r -p "Pulsa Enter para continuar..." _
+    pausa_obligatoria
 }
